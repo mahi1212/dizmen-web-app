@@ -115,14 +115,15 @@ export default function MenuCard({
                 onClick={() => onToggleExpand(menu.id)}
                 title={isExpanded ? "Hide items" : "Show items"}
               >
+                
+                <span className="ml-1 hidden sm:inline">
+                  {isExpanded ? "Hide" : "Show Recents"}
+                </span>
                 {isExpanded ? (
                   <ChevronUp className="h-4 w-4" />
                 ) : (
                   <ChevronDown className="h-4 w-4" />
                 )}
-                <span className="ml-1 hidden sm:inline">
-                  {isExpanded ? "Hide" : "Show"}
-                </span>
               </Button>
               
               <Button variant="ghost" size="sm" onClick={() => onEdit(menu)}>

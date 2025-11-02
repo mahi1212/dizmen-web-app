@@ -32,26 +32,35 @@ export default function AdminMenuItemCard({
 
   return (
     <Card className={`overflow-hidden p-0 gap-0 ${!item.isAvailable ? 'border-2 border-red-500' : ''}`}>
-      {item.images && item.images.length > 0 && (
-        <div 
-          className="relative h-48 w-full cursor-pointer hover:opacity-90 transition-opacity" 
-          onClick={() => onClick?.(item)}
-        >
-          <img
-            src={item.images[0]}
-            alt={item.name}
-            className="w-full h-full object-cover"
-          />
-          {item.images.length > 1 && (
-            <Badge className="absolute top-2 right-2" variant="secondary">
-              +{item.images.length - 1} more
-            </Badge>
-          )}
-          <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors flex items-center justify-center">
-            <Eye className="h-8 w-8 text-white opacity-0 hover:opacity-100 transition-opacity" />
+      <div 
+        className="relative h-48 w-full cursor-pointer hover:opacity-90 transition-opacity" 
+        onClick={() => onClick?.(item)}
+      >
+        {item.images && item.images.length > 0 ? (
+          <>
+            <img
+              src={item.images[0]}
+              alt={item.name}
+              className="w-full h-full object-cover"
+            />
+            {item.images.length > 1 && (
+              <Badge className="absolute top-2 right-2" variant="secondary">
+                +{item.images.length - 1} more
+              </Badge>
+            )}
+            <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors flex items-center justify-center">
+              <Eye className="h-8 w-8 text-white opacity-0 hover:opacity-100 transition-opacity" />
+            </div>
+          </>
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+            <div className="text-center">
+              <div className="text-4xl mb-2">📷</div>
+              <p className="text-gray-500 text-sm font-medium">No Image Available</p>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
       <CardHeader className="pb-3 pt-4">
         <div className="flex justify-between items-start gap-2">
           <div 
