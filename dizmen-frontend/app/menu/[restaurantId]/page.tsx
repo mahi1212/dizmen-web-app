@@ -10,6 +10,7 @@ import { MenuItem, Review, Restaurant, Menu } from '@/lib/types';
 import { isMenuAvailableNow } from '@/lib/helpers';
 import { toast } from 'sonner';
 import CustomerMenuItemCard from '@/components/dashboard/cards/customer-menu-item-card';
+import VerificationWarningBanner from '@/components/verification-warning-banner';
 
 // Lazy load dialogs for code splitting
 const ItemDetailDialog = lazy(() => import('@/components/dashboard/modals/item-detail-dialog'));
@@ -140,6 +141,11 @@ export default function MenuPage() {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-4 sm:py-8">
+        {/* Verification Warning Banner */}
+        <div className="mb-6">
+          <VerificationWarningBanner restaurant={restaurant} />
+        </div>
+
         {menus.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">

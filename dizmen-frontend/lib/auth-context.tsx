@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, UserRole } from './types';
+import { mockUsers } from './mock-data';
 
 interface AuthContextType {
   user: User | null;
@@ -26,14 +27,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string, role: UserRole) => {
-    // Mock authentication - replace with real API call
-    const mockUser: User = {
-      id: Math.random().toString(36).substr(2, 9),
-      email,
-      name: email.split('@')[0],
-      role,
-      restaurantId: role === 'restaurant_authority' ? 'rest-1' : undefined,
-    };
+    // Check if user exists in mock data
+    const existingUser = mockUsers.find(u => u.email === email);
+    
+    let mockUser: User;
+    
+    if (existingUser) {
+      // Use existing user data
+      mockUser = existingUser;
+    } else {
+      // Create new user (for signup)
+      mockUser = {
+        id: `user-${Date.now()}`,
+        email,
+        name: email.split('@')[0],
+        role,
+        // New users don't have restaurantId yet
+      };
+    }
     
     setUser(mockUser);
     localStorage.setItem('user', JSON.stringify(mockUser));

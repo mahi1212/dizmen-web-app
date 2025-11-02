@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useAuth } from '@/lib/auth-context';
 import { UserRole } from '@/lib/types';
 import { QrCode, Clock, Star, Edit3, Smartphone, TrendingUp } from 'lucide-react';
+import Navbar from '@/components/navbar';
 
 export default function Home() {
   const [showLogin, setShowLogin] = useState(false);
@@ -93,24 +94,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-yellow-50">
-      <nav className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-2">
-              <QrCode className="h-8 w-8 text-orange-600" />
-              <span className="text-2xl font-bold text-gray-900">Dizmen</span>
-            </div>
-            <div className="flex space-x-4">
-              <Button variant="ghost" onClick={() => setShowLogin(true)}>
-                Sign In
-              </Button>
-              <Button onClick={() => setShowLogin(true)}>
-                Get Started
-              </Button>
-            </div>
-          </div>
-        </div>
-      </nav>
+          <Navbar />
 
       <section className="py-20 px-4">
         <div className="max-w-7xl mx-auto text-center">
@@ -121,10 +105,10 @@ export default function Home() {
             Stop disappointing customers with unavailable items. Update your menu instantly, schedule time-based availability, and let customers see what's actually available right now.
           </p>
           <div className="flex justify-center space-x-4">
-            <Button size="lg" onClick={() => setShowLogin(true)}>
+            <Button size="lg" onClick={() => router.push('/auth')}>
               Start Free Trial
             </Button>
-            <Button size="lg" variant="outline">
+            <Button size="lg" variant="outline" onClick={() => router.push('/menu/rest-1')}>
               View Demo Menu
             </Button>
           </div>
@@ -231,7 +215,7 @@ export default function Home() {
           <p className="text-xl mb-8 text-orange-100">
             Join hundreds of restaurants providing better customer experiences
           </p>
-          <Button size="lg" variant="secondary" onClick={() => setShowLogin(true)}>
+          <Button size="lg" variant="secondary" onClick={() => router.push('/auth')}>
             Get Started Now
           </Button>
         </div>

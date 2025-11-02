@@ -7,12 +7,16 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { QrCode, LogOut } from 'lucide-react';
 import { LazyMenusTab, LazyItemsTab, LazyRestaurantTab, LazyQRCodeTab } from '@/components/dashboard/lazy-tabs';
+import OnboardingFlow from '@/components/onboarding-flow';
+import { mockRestaurants } from '@/lib/mock-data';
+import { Restaurant } from '@/lib/types';
 
 function DashboardContent() {
   const { user, logout, isLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [currentTab, setCurrentTab] = useState('menus');
+  const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
 
   useEffect(() => {
     if (!isLoading && (!user || user.role !== 'restaurant_authority')) {
@@ -21,15 +25,57 @@ function DashboardContent() {
   }, [user, isLoading, router]);
 
   useEffect(() => {
+    // Redirect to onboarding if user doesn't have a restaurant
+    if (user && user.role === 'restaurant_authority' && !user.restaurantId) {
+      router.push('/restaurant-onboarding');
+    }
+  }, [user, router]);
+
+  useEffect(() => {
     const tab = searchParams.get('tab');
     if (tab) {
       setCurrentTab(tab);
     }
   }, [searchParams]);
 
+  useEffect(() => {
+    // Load restaurant data for the current user
+    if (user?.restaurantId) {
+      const rest = mockRestaurants.find(r => r.id === user.restaurantId);
+      if (rest) {
+        setRestaurant(rest);
+      } else {
+        // Restaurant not found in mock data - means it's newly submitted (pending verification)
+        // Create a temporary restaurant object with pending status
+        setRestaurant({
+          id: user.restaurantId,
+          name: 'Your Restaurant',
+          description: 'Pending verification',
+          address: 'Address on file',
+          ownerId: user.id,
+          createdAt: new Date(),
+          qrCode: user.restaurantId,
+          verificationStatus: 'pending',
+          onboardingStep: 'complete',
+        });
+      }
+    }
+  }, [user]);
+
   if (isLoading || !user) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
+
+  const handleOnboardingComplete = (updatedRestaurant: Restaurant) => {
+    setRestaurant(updatedRestaurant);
+    // In a real app, save to backend here
+  };
+
+  // Show onboarding if restaurant is not complete or rejected
+  const showOnboarding = restaurant && (
+    restaurant.onboardingStep !== 'complete' || 
+    restaurant.verificationStatus === 'rejected'
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -58,30 +104,60 @@ function DashboardContent() {
       </nav>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
-        <Tabs value={currentTab} onValueChange={setCurrentTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 max-w-2xl">
-            <TabsTrigger value="menus">Menus</TabsTrigger>
-            <TabsTrigger value="items">Items</TabsTrigger>
-            <TabsTrigger value="restaurant">Restaurant</TabsTrigger>
-            <TabsTrigger value="qr">QR Code</TabsTrigger>
-          </TabsList>
+        {/* Show onboarding flow if needed */}
+        {restaurant && showOnboarding ? (
+          <OnboardingFlow 
+            restaurant={restaurant} 
+            onComplete={handleOnboardingComplete}
+          />
+        ) : (
+          <>
+            {/* Show verification status banner if pending */}
+            {restaurant && restaurant.verificationStatus === 'pending' && restaurant.onboardingStep === 'complete' && (
+              <OnboardingFlow 
+                restaurant={restaurant} 
+                onComplete={handleOnboardingComplete}
+              />
+            )}
 
-          <TabsContent value="menus" className="space-y-4">
-            <LazyMenusTab value="menus" currentTab={currentTab} />
-          </TabsContent>
+            {/* Main Dashboard Tabs */}
+            <Tabs value={currentTab} onValueChange={setCurrentTab} className="space-y-6">
+              <TabsList className="grid w-full grid-cols-4 max-w-2xl">
+                <TabsTrigger value="menus">Menus</TabsTrigger>
+                <TabsTrigger value="items">Items</TabsTrigger>
+                <TabsTrigger value="restaurant">Restaurant</TabsTrigger>
+                <TabsTrigger 
+                  value="qr" 
+                  disabled={restaurant?.verificationStatus !== 'verified'}
+                >
+                  QR Code
+                </TabsTrigger>
+              </TabsList>
 
-          <TabsContent value="items" className="space-y-4">
-            <LazyItemsTab value="items" currentTab={currentTab} />
-          </TabsContent>
+              <TabsContent value="menus" className="space-y-4">
+                <LazyMenusTab value="menus" currentTab={currentTab} />
+              </TabsContent>
 
-          <TabsContent value="restaurant">
-            <LazyRestaurantTab value="restaurant" currentTab={currentTab} />
-          </TabsContent>
+              <TabsContent value="items" className="space-y-4">
+                <LazyItemsTab value="items" currentTab={currentTab} />
+              </TabsContent>
 
-          <TabsContent value="qr">
-            <LazyQRCodeTab value="qr" currentTab={currentTab} />
-          </TabsContent>
-        </Tabs>
+              <TabsContent value="restaurant">
+                <LazyRestaurantTab value="restaurant" currentTab={currentTab} />
+              </TabsContent>
+
+              <TabsContent value="qr">
+                {restaurant?.verificationStatus === 'verified' ? (
+                  <LazyQRCodeTab value="qr" currentTab={currentTab} />
+                ) : (
+                  <div className="text-center py-12">
+                    <p className="text-gray-500">QR Code will be available after verification</p>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
+          </>
+        )}
       </div>
     </div>
   );

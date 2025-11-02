@@ -1,4 +1,64 @@
-import { Restaurant, Menu, MenuItem, Review } from './types';
+import { Restaurant, Menu, MenuItem, Review, User } from './types';
+
+export const mockUsers: User[] = [
+  {
+    id: 'user-1',
+    email: 'owner@restaurant.com',
+    name: 'John Doe',
+    role: 'restaurant_authority',
+    restaurantId: 'rest-1',
+    onboardingCompleted: true,
+  },
+  {
+    id: 'user-2',
+    email: 'newowner@restaurant.com',
+    name: 'Jane Smith',
+    role: 'restaurant_authority',
+    onboardingCompleted: false,
+    onboardingDraft: {
+      step: 2,
+      formData: {
+        name: 'La Bella Vista',
+        description: 'Authentic Italian cuisine in the heart of the city',
+        address: '456 Oak Avenue, Downtown',
+        phone: '+1987654321',
+        website: 'https://labellavista.com',
+        googleLocationUrl: 'https://maps.google.com/?q=La+Bella+Vista',
+        socialMediaLinks: [
+          { platform: 'Instagram', url: 'https://instagram.com/labellavista' },
+          { platform: 'Facebook', url: 'https://facebook.com/labellavista' },
+        ],
+      },
+      documents: [],
+      lastSaved: new Date(),
+    },
+  },
+  {
+    id: 'user-3',
+    email: 'admin@dizmen.com',
+    name: 'Admin User',
+    role: 'super_admin',
+    onboardingCompleted: true,
+  },
+  {
+    id: 'user-4',
+    email: 'pending@restaurant.com',
+    name: 'Mike Johnson',
+    role: 'restaurant_authority',
+    onboardingCompleted: false,
+    onboardingDraft: {
+      step: 2,
+      formData: {
+        name: 'The Golden Spoon',
+        description: 'Fine dining experience with international cuisine',
+        address: '123 Main Street, Downtown',
+        phone: '+1234567890',
+      },
+      documents: [],
+      lastSaved: new Date(),
+    },
+  },
+];
 
 export const mockRestaurants: Restaurant[] = [
   {
@@ -10,6 +70,27 @@ export const mockRestaurants: Restaurant[] = [
     ownerId: 'owner-1',
     createdAt: new Date('2024-01-01'),
     qrCode: 'rest-1',
+    verificationStatus: 'verified', // Change to 'pending' or 'rejected' to test
+    onboardingStep: 'complete',
+    socialMediaLinks: [
+      { platform: 'Facebook', url: 'https://facebook.com/goldenspoon' },
+      { platform: 'Instagram', url: 'https://instagram.com/goldenspoon' },
+    ],
+    googleLocationUrl: 'https://maps.google.com/?q=Golden+Spoon+Restaurant',
+    verificationDocuments: [
+      {
+        id: 'doc-1',
+        documentType: 'business_license',
+        documentUrl: '/documents/business-license.pdf',
+        uploadedAt: new Date('2024-01-02'),
+      },
+      {
+        id: 'doc-2',
+        documentType: 'health_permit',
+        documentUrl: '/documents/health-permit.pdf',
+        uploadedAt: new Date('2024-01-02'),
+      },
+    ],
   },
 ];
 
