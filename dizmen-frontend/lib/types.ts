@@ -1,6 +1,6 @@
 export type UserRole = 'super_admin' | 'restaurant_authority' | 'customer';
 
-export type VerificationStatus = 'pending' | 'verified' | 'rejected';
+export type VerificationStatus = 'verified' | 'blocked';
 
 export type OnboardingStep = 'restaurant_info' | 'verification_documents' | 'complete';
 
@@ -15,7 +15,7 @@ export interface User {
 }
 
 export interface RestaurantDraft {
-  step: number; // 1, 2, or 3
+  step: number; // 1 or 2
   formData: {
     name?: string;
     description?: string;
@@ -25,11 +25,11 @@ export interface RestaurantDraft {
     googleLocationUrl?: string;
     socialMediaLinks?: SocialMediaLink[];
   };
-  documents?: {
+  profileImage?: {
     name: string;
     size: number;
     type: string;
-  }[];
+  } | null;
   lastSaved: Date;
 }
 
@@ -56,12 +56,14 @@ export interface Restaurant {
   qrCode: string;
   verificationStatus: VerificationStatus;
   onboardingStep: OnboardingStep;
+  profileImage?: string; // URL to profile image
   verificationDocuments?: VerificationDocument[];
   verifiedAt?: Date;
   verifiedBy?: string; // Admin user ID
-  rejectionReason?: string;
+  rejectionReason?: string; // Kept for backward compatibility, but now used as blockReason
   socialMediaLinks?: SocialMediaLink[];
   googleLocationUrl?: string;
+  website?: string;
 }
 
 export interface Menu {
@@ -93,20 +95,5 @@ export interface MenuItem {
   isAvailable: boolean;
   createdAt: Date;
   updatedAt: Date;
-}
-
-export interface Review {
-  id: string;
-  menuItemId: string;
-  customerId: string;
-  customerName: string;
-  rating: number;
-  comment: string;
-  createdAt: Date;
-}
-
-export interface MenuItemWithReviews extends MenuItem {
-  reviews: Review[];
-  averageRating: number;
 }
 

@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useAuth } from '@/lib/auth-context';
 import { UserRole } from '@/lib/types';
 import { QrCode, Clock, Star, Edit3, Smartphone, TrendingUp } from 'lucide-react';
-import Navbar from '@/components/navbar';
+import Navbar from '@/components/dashboard/navbar';
 
 export default function Home() {
   const [showLogin, setShowLogin] = useState(false);

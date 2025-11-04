@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from './ui/button';
+import { Button } from '../ui/button';
 import { QrCode } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 

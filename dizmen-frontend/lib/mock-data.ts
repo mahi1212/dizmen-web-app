@@ -1,4 +1,4 @@
-import { Restaurant, Menu, MenuItem, Review, User } from './types';
+import { Restaurant, Menu, MenuItem, User } from './types';
 
 export const mockUsers: User[] = [
   {
@@ -29,7 +29,7 @@ export const mockUsers: User[] = [
           { platform: 'Facebook', url: 'https://facebook.com/labellavista' },
         ],
       },
-      documents: [],
+      profileImage: null,
       lastSaved: new Date(),
     },
   },
@@ -54,7 +54,7 @@ export const mockUsers: User[] = [
         address: '123 Main Street, Downtown',
         phone: '+1234567890',
       },
-      documents: [],
+      profileImage: null,
       lastSaved: new Date(),
     },
   },
@@ -70,27 +70,14 @@ export const mockRestaurants: Restaurant[] = [
     ownerId: 'owner-1',
     createdAt: new Date('2024-01-01'),
     qrCode: 'rest-1',
-    verificationStatus: 'verified', // Change to 'pending' or 'rejected' to test
+    verificationStatus: 'verified', // Can be 'verified' or 'blocked'
     onboardingStep: 'complete',
     socialMediaLinks: [
       { platform: 'Facebook', url: 'https://facebook.com/goldenspoon' },
       { platform: 'Instagram', url: 'https://instagram.com/goldenspoon' },
     ],
     googleLocationUrl: 'https://maps.google.com/?q=Golden+Spoon+Restaurant',
-    verificationDocuments: [
-      {
-        id: 'doc-1',
-        documentType: 'business_license',
-        documentUrl: '/documents/business-license.pdf',
-        uploadedAt: new Date('2024-01-02'),
-      },
-      {
-        id: 'doc-2',
-        documentType: 'health_permit',
-        documentUrl: '/documents/health-permit.pdf',
-        uploadedAt: new Date('2024-01-02'),
-      },
-    ],
+    website: 'https://goldenspoon.com',
   },
 ];
 
@@ -489,7 +476,4 @@ export const mockMenuItems: MenuItem[] = [
     updatedAt: new Date(),
   },
 ];
-
-export const mockReviews: Review[] = [];
-
 

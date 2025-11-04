@@ -6,10 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
-import { Upload, CheckCircle, Clock, XCircle, FileText, Shield, Building } from 'lucide-react';
+import { Upload, FileText, Building } from 'lucide-react';
 import { Restaurant } from '@/lib/types';
 import { toast } from 'sonner';
 
@@ -64,7 +63,7 @@ export default function OnboardingFlow({ restaurant, onComplete }: OnboardingFlo
       ...restaurant,
       ...restaurantData,
       onboardingStep: 'complete',
-      verificationStatus: 'pending',
+      verificationStatus: 'verified',
       verificationDocuments: documents.map((doc, idx) => ({
         id: `doc-${Date.now()}-${idx}`,
         documentType: 'business_license',
@@ -77,74 +76,10 @@ export default function OnboardingFlow({ restaurant, onComplete }: OnboardingFlo
     onComplete(updatedRestaurant);
   };
 
-  const getStatusBadge = () => {
-    switch (restaurant.verificationStatus) {
-      case 'verified':
-        return (
-          <Badge className="bg-green-500">
-            <CheckCircle className="h-3 w-3 mr-1" />
-            Verified
-          </Badge>
-        );
-      case 'pending':
-        return (
-          <Badge className="bg-yellow-500">
-            <Clock className="h-3 w-3 mr-1" />
-            Pending Review
-          </Badge>
-        );
-      case 'rejected':
-        return (
-          <Badge variant="destructive">
-            <XCircle className="h-3 w-3 mr-1" />
-            Rejected
-          </Badge>
-        );
-      default:
-        return null;
-    }
-  };
-
-  if (restaurant.onboardingStep === 'complete' && restaurant.verificationStatus !== 'rejected') {
-    return (
-      <Card className="mb-6">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5" />
-                Verification Status
-              </CardTitle>
-              <CardDescription className="mt-1">
-                Your restaurant verification status
-              </CardDescription>
-            </div>
-            {getStatusBadge()}
-          </div>
-        </CardHeader>
-        <CardContent>
-          {restaurant.verificationStatus === 'pending' && (
-            <Alert>
-              <Clock className="h-4 w-4" />
-              <AlertDescription>
-                Your restaurant is currently under review by our administrators. 
-                This typically takes 6-24 hours We'll notify you once the review is complete.
-              </AlertDescription>
-            </Alert>
-          )}
-          {restaurant.verificationStatus === 'verified' && (
-            <Alert className="border-green-500 bg-green-50">
-              <CheckCircle className="h-4 w-4 text-green-600" />
-              <AlertTitle className="text-green-900">Verified!</AlertTitle>
-              <AlertDescription className="text-green-800">
-                Congratulations! Your restaurant has been verified. 
-                {restaurant.verifiedAt && ` Verified on ${restaurant.verifiedAt.toLocaleDateString()}`}
-              </AlertDescription>
-            </Alert>
-          )}
-        </CardContent>
-      </Card>
-    );
+  if (restaurant.onboardingStep === 'complete') {
+    // Onboarding is complete - no need to show anything
+    // Restaurant is automatically active
+    return null;
   }
 
   return (

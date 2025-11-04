@@ -16,8 +16,6 @@ import {
   Building, 
   MapPin, 
   Phone, 
-  FileText, 
-  Upload, 
   CheckCircle, 
   Info,
   ArrowLeft,
@@ -26,7 +24,8 @@ import {
   X,
   Link as LinkIcon,
   Save,
-  Clock
+  Clock,
+  Image as ImageIcon
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { mockUsers } from '@/lib/mock-data';
@@ -54,7 +53,8 @@ export default function RestaurantOnboardingPage() {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSavingDraft, setIsSavingDraft] = useState(false);
-  const [documents, setDocuments] = useState<File[]>([]);
+  const [profileImage, setProfileImage] = useState<File | null>(null);
+  const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
   const form = useForm<RestaurantFormData>({
@@ -111,7 +111,7 @@ export default function RestaurantOnboardingPage() {
     }
   }, [user, router, form]);
 
-  const totalSteps = 3;
+  const totalSteps = 2;
   const progress = (step / totalSteps) * 100;
 
   const handleSaveDraft = async () => {
@@ -121,11 +121,11 @@ export default function RestaurantOnboardingPage() {
     const draft = {
       step,
       formData,
-      documents: documents.map(doc => ({
-        name: doc.name,
-        size: doc.size,
-        type: doc.type,
-      })),
+      profileImage: profileImage ? {
+        name: profileImage.name,
+        size: profileImage.size,
+        type: profileImage.type,
+      } : null,
       lastSaved: new Date(),
     };
 
@@ -139,7 +139,7 @@ export default function RestaurantOnboardingPage() {
   };
 
   const handleRestaurantInfoNext = async () => {
-    const isValid = await form.trigger(['name', 'address', 'website', 'googleLocationUrl', 'socialMediaLinks']);
+    const isValid = await form.trigger(['name', 'address']);
     if (!isValid) {
       toast.error('Please fix the errors before continuing');
       return;
@@ -150,37 +150,62 @@ export default function RestaurantOnboardingPage() {
     setStep(2);
   };
 
-  const handleDocumentUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const newFiles = Array.from(e.target.files);
-      setDocuments([...documents, ...newFiles]);
-      toast.success(`${newFiles.length} document(s) uploaded`);
+  const handleProfileImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setProfileImage(file);
+      
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+      
+      toast.success('Profile image uploaded');
     }
   };
 
-  const removeDocument = (index: number) => {
-    setDocuments(documents.filter((_, i) => i !== index));
-    toast.success('Document removed');
+  const removeProfileImage = () => {
+    setProfileImage(null);
+    setProfileImagePreview(null);
+    toast.success('Profile image removed');
   };
 
   const handleSubmit = async () => {
-    if (documents.length === 0) {
-      toast.error('Please upload at least one verification document');
-      return;
-    }
-
     const formData = form.getValues();
     setIsSubmitting(true);
 
     // Simulate API call
     setTimeout(() => {
       console.log('Restaurant Data:', formData);
-      console.log('Documents:', documents);
+      console.log('Profile Image:', profileImage);
       
       // Create new restaurant ID
       const newRestaurantId = `rest-${Date.now()}`;
       
-      // Update user with onboarding completed flag and restaurant ID
+      // Create restaurant object
+      const newRestaurant = {
+        id: newRestaurantId,
+        name: formData.name,
+        description: formData.description || '',
+        address: formData.address,
+        phone: formData.phone || '',
+        website: formData.website || '',
+        googleLocationUrl: formData.googleLocationUrl || '',
+        socialMediaLinks: formData.socialMediaLinks || [],
+        profileImage: profileImagePreview || undefined,
+        ownerId: user!.id,
+        createdAt: new Date(),
+        qrCode: newRestaurantId,
+        verificationStatus: 'verified' as const,
+        onboardingStep: 'complete' as const,
+      };
+      
+      // Save restaurant to localStorage
+      localStorage.setItem(`restaurant-${newRestaurantId}`, JSON.stringify(newRestaurant));
+      
+      // Update user with restaurant ID (restaurant is immediately active, not pending)
       const updatedUser = {
         ...user!,
         restaurantId: newRestaurantId,
@@ -188,20 +213,18 @@ export default function RestaurantOnboardingPage() {
         onboardingDraft: undefined, // Clear draft after submission
       };
       
-      // Save to localStorage (in real app, this would be API call)
+      // Save user to localStorage (in real app, this would be API call)
       localStorage.setItem('user', JSON.stringify(updatedUser));
       
       // Clear draft after successful submission
-      toast.success('Restaurant submitted for verification!');
-      toast.info('You can now access your dashboard. QR code will be available after admin verification.');
+      toast.success('Restaurant created successfully!');
+      toast.info('Your restaurant is now live! You can start managing your menu.');
       
       // Redirect to dashboard and force reload to update auth context
       window.location.href = '/dashboard';
       setIsSubmitting(false);
     }, 2000);
   };
-
-  const restaurantData = form.watch();
 
   if (!user) {
     return (
@@ -256,21 +279,14 @@ export default function RestaurantOnboardingPage() {
                 <div className={`rounded-full h-10 w-10 flex items-center justify-center border-2 ${step >= 1 ? 'border-orange-600 bg-orange-50' : 'border-gray-300'}`}>
                   {step > 1 ? <CheckCircle className="h-5 w-5" /> : '1'}
                 </div>
-                <span className="ml-2 text-sm font-medium hidden sm:inline">Basic Info</span>
+                <span className="ml-2 text-sm font-medium hidden sm:inline">Restaurant Info</span>
               </div>
               <div className="flex-1 h-0.5 bg-gray-300 mx-2"></div>
               <div className={`flex items-center ${step >= 2 ? 'text-orange-600' : 'text-gray-400'}`}>
                 <div className={`rounded-full h-10 w-10 flex items-center justify-center border-2 ${step >= 2 ? 'border-orange-600 bg-orange-50' : 'border-gray-300'}`}>
                   {step > 2 ? <CheckCircle className="h-5 w-5" /> : '2'}
                 </div>
-                <span className="ml-2 text-sm font-medium hidden sm:inline">Documents</span>
-              </div>
-              <div className="flex-1 h-0.5 bg-gray-300 mx-2"></div>
-              <div className={`flex items-center ${step >= 3 ? 'text-orange-600' : 'text-gray-400'}`}>
-                <div className={`rounded-full h-10 w-10 flex items-center justify-center border-2 ${step >= 3 ? 'border-orange-600 bg-orange-50' : 'border-gray-300'}`}>
-                  {step > 3 ? <CheckCircle className="h-5 w-5" /> : '3'}
-                </div>
-                <span className="ml-2 text-sm font-medium hidden sm:inline">Review</span>
+                <span className="ml-2 text-sm font-medium hidden sm:inline">Profile & Links</span>
               </div>
             </div>
           </CardContent>
@@ -294,7 +310,7 @@ export default function RestaurantOnboardingPage() {
                 <Input
                   id="name"
                   {...form.register('name')}
-                  placeholder="e.g., The Golden Spoon"
+                  placeholder="e.g., La Bella Vista"
                 />
                 {form.formState.errors.name && (
                   <p className="text-sm text-red-500 mt-1">{form.formState.errors.name.message}</p>
@@ -306,7 +322,7 @@ export default function RestaurantOnboardingPage() {
                 <Textarea
                   id="description"
                   {...form.register('description')}
-                  placeholder="Describe your restaurant, cuisine type, and unique offerings"
+                  placeholder="e.g., Authentic Italian cuisine in the heart of the city"
                   rows={4}
                 />
                 <p className="text-xs text-gray-500 mt-1">
@@ -321,7 +337,7 @@ export default function RestaurantOnboardingPage() {
                   <Input
                     id="address"
                     {...form.register('address')}
-                    placeholder="123 Main Street, City, State, ZIP"
+                    placeholder="e.g., 456 Oak Avenue, Downtown"
                     className="pl-10"
                   />
                 </div>
@@ -338,16 +354,108 @@ export default function RestaurantOnboardingPage() {
                     id="phone"
                     type="tel"
                     {...form.register('phone')}
-                    placeholder="+1 (234) 567-8900"
+                    placeholder="e.g., +1 (234) 567-8900"
                     className="pl-10"
                   />
                 </div>
               </div>
 
+              <div className="flex gap-2 pt-4">
+                <Button variant="outline" onClick={handleSaveDraft} className="flex-1">
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Draft
+                </Button>
+                <Button onClick={handleRestaurantInfoNext} className="flex-1">
+                  Continue to Profile & Links
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Step 2: Profile & Links */}
+        {step === 2 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ImageIcon className="h-5 w-5 text-orange-600" />
+                Profile & Links
+              </CardTitle>
+              <CardDescription>
+                Add a profile image and your online presence
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Profile Image Upload */}
+              <div className="space-y-3">
+                <Label>Restaurant Profile Image</Label>
+                <div className="flex flex-col items-center gap-4">
+                  {profileImagePreview ? (
+                    <div className="relative">
+                      <img
+                        src={profileImagePreview}
+                        alt="Profile preview"
+                        className="w-48 h-48 object-cover rounded-lg border-2 border-gray-300"
+                      />
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={removeProfileImage}
+                        className="absolute -top-2 -right-2"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="w-full border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-orange-400 transition-colors">
+                      <ImageIcon className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                      <Label htmlFor="profileImage" className="cursor-pointer">
+                        <p className="text-sm font-medium text-gray-900 mb-1">
+                          Click to upload profile image
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          PNG, JPG up to 5MB (recommended: 1:1 ratio)
+                        </p>
+                      </Label>
+                      <Input
+                        id="profileImage"
+                        type="file"
+                        accept=".png,.jpg,.jpeg"
+                        onChange={handleProfileImageUpload}
+                        className="hidden"
+                      />
+                    </div>
+                  )}
+                </div>
+                <p className="text-xs text-gray-500">
+                  This image will be displayed on your menu page
+                </p>
+              </div>
+
+              {/* Website */}
               <div>
-                <Label htmlFor="googleLocationUrl">Google Maps Location </Label>
+                <Label htmlFor="website">Website</Label>
                 <div className="relative">
                   <LinkIcon className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Input
+                    id="website"
+                    type="url"
+                    {...form.register('website')}
+                    placeholder="https://www.yourrestaurant.com"
+                    className="pl-10"
+                  />
+                </div>
+                {form.formState.errors.website && (
+                  <p className="text-sm text-red-500 mt-1">{form.formState.errors.website.message}</p>
+                )}
+              </div>
+
+              {/* Google Maps Location */}
+              <div>
+                <Label htmlFor="googleLocationUrl">Google Maps Location</Label>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
                     id="googleLocationUrl"
                     type="url"
@@ -364,23 +472,10 @@ export default function RestaurantOnboardingPage() {
                 </p>
               </div>
 
-              <div>
-                <Label htmlFor="website">Website </Label>
-                <Input
-                  id="website"
-                  type="url"
-                  {...form.register('website')}
-                  placeholder="https://www.yourrestaurant.com"
-                />
-                {form.formState.errors.website && (
-                  <p className="text-sm text-red-500 mt-1">{form.formState.errors.website.message}</p>
-                )}
-              </div>
-
               {/* Social Media Links */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <Label>Social Media Links </Label>
+                  <Label>Social Media Links</Label>
                   <Button
                     type="button"
                     variant="outline"
@@ -434,94 +529,15 @@ export default function RestaurantOnboardingPage() {
                 )}
               </div>
 
-              <div className="flex gap-2 pt-4">
-                <Button variant="outline" onClick={handleSaveDraft} className="flex-1">
-                  <Save className="h-4 w-4 mr-2" />
-                  Save Draft
-                </Button>
-                <Button onClick={handleRestaurantInfoNext} className="flex-1">
-                  Continue to Documents
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Step 2: Verification Documents */}
-        {step === 2 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5 text-orange-600" />
-                Verification Documents
-              </CardTitle>
-              <CardDescription>
-                Upload required documents for verification
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
               <Alert>
                 <Info className="h-4 w-4" />
-                <AlertTitle>Required Documents</AlertTitle>
-                <AlertDescription>
-                  <ul className="list-disc list-inside mt-2 space-y-1 text-sm">
-                    <li>Business Registration or License</li>
-                    <li>Food Service Permit / Health Certificate</li>
-                    <li>Proof of Identity (Owner/Manager)</li>
-                    <li>Tax ID / EIN Documentation</li>
-                    <li>Additional permits (if applicable)</li>
-                  </ul>
+                <AlertTitle>Ready to launch?</AlertTitle>
+                <AlertDescription className="text-sm mt-2">
+                  Once you submit, your restaurant will be immediately live and customers can scan your QR code to view your menu. You can start adding menu items from your dashboard.
                 </AlertDescription>
               </Alert>
 
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-orange-400 transition-colors">
-                <Upload className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                <Label htmlFor="documents" className="cursor-pointer">
-                  <p className="text-sm font-medium text-gray-900 mb-1">
-                    Click to upload documents
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    PDF, PNG, JPG up to 10MB each (multiple files allowed)
-                  </p>
-                </Label>
-                <Input
-                  id="documents"
-                  type="file"
-                  multiple
-                  accept=".pdf,.png,.jpg,.jpeg"
-                  onChange={handleDocumentUpload}
-                  className="hidden"
-                />
-              </div>
-
-              {documents.length > 0 && (
-                <div className="space-y-2">
-                  <Label>Uploaded Documents ({documents.length})</Label>
-                  {documents.map((doc, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
-                      <div className="flex items-center space-x-3">
-                        <FileText className="h-5 w-5 text-gray-500" />
-                        <div>
-                          <p className="text-sm font-medium">{doc.name}</p>
-                          <p className="text-xs text-gray-500">
-                            {(doc.size / 1024 / 1024).toFixed(2)} MB
-                          </p>
-                        </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeDocument(idx)}
-                      >
-                        Remove
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <div className="flex space-x-2">
+              <div className="flex gap-2 pt-4">
                 <Button
                   variant="outline"
                   onClick={() => setStep(1)}
@@ -539,132 +555,16 @@ export default function RestaurantOnboardingPage() {
                   Save Draft
                 </Button>
                 <Button
-                  onClick={() => setStep(3)}
-                  className="flex-1"
-                  disabled={documents.length === 0}
+                  onClick={handleSubmit}
+                  className="flex-1 bg-green-600 hover:bg-green-700"
+                  disabled={isSubmitting}
                 >
-                  Review
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                  {isSubmitting ? 'Creating...' : 'Create Restaurant'}
+                  <CheckCircle className="ml-2 h-4 w-4" />
                 </Button>
               </div>
             </CardContent>
           </Card>
-        )}
-
-        {/* Step 3: Review & Submit */}
-        {step === 3 && (
-          <div className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-orange-600" />
-                  Review Your Information
-                </CardTitle>
-                <CardDescription>
-                  Please review before submitting
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Restaurant Details */}
-                <div>
-                  <h3 className="font-semibold mb-3">Restaurant Details</h3>
-                  <div className="grid gap-3 p-4 bg-gray-50 rounded-lg">
-                    <div>
-                      <p className="text-xs text-gray-500">Name</p>
-                      <p className="font-medium">{restaurantData.name}</p>
-                    </div>
-                    {restaurantData.description && (
-                      <div>
-                        <p className="text-xs text-gray-500">Description</p>
-                        <p className="text-sm">{restaurantData.description}</p>
-                      </div>
-                    )}
-                    <div>
-                      <p className="text-xs text-gray-500">Address</p>
-                      <p className="text-sm">{restaurantData.address}</p>
-                    </div>
-                    {restaurantData.phone && (
-                      <div>
-                        <p className="text-xs text-gray-500">Phone</p>
-                        <p className="text-sm">{restaurantData.phone}</p>
-                      </div>
-                    )}
-                    {restaurantData.website && (
-                      <div>
-                        <p className="text-xs text-gray-500">Website</p>
-                        <p className="text-sm break-all">{restaurantData.website}</p>
-                      </div>
-                    )}
-                    {restaurantData.googleLocationUrl && (
-                      <div>
-                        <p className="text-xs text-gray-500">Google Maps Location</p>
-                        <p className="text-sm break-all">{restaurantData.googleLocationUrl}</p>
-                      </div>
-                    )}
-                    {restaurantData.socialMediaLinks && restaurantData.socialMediaLinks.length > 0 && (
-                      <div>
-                        <p className="text-xs text-gray-500 mb-2">Social Media</p>
-                        <div className="space-y-1">
-                          {restaurantData.socialMediaLinks.map((link, idx) => (
-                            <div key={idx} className="flex items-center space-x-2 text-sm">
-                              <span className="font-medium">{link.platform}:</span>
-                              <span className="text-gray-600 break-all">{link.url}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Documents */}
-                <div>
-                  <h3 className="font-semibold mb-3">Verification Documents</h3>
-                  <div className="space-y-2">
-                    {documents.map((doc, idx) => (
-                      <div key={idx} className="flex items-center p-3 bg-gray-50 rounded-lg border">
-                        <FileText className="h-5 w-5 text-gray-500 mr-3" />
-                        <span className="text-sm">{doc.name}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Important Notice */}
-                <Alert>
-                  <Info className="h-4 w-4" />
-                  <AlertTitle>What happens next?</AlertTitle>
-                  <AlertDescription className="text-sm mt-2">
-                    <ul className="list-disc list-inside space-y-1">
-                      <li>Your application will be reviewed by our team</li>
-                      <li>We'll verify your documents within 6-24 hours</li>
-                      <li>You'll receive an email notification about the status</li>
-                      <li>Once approved, you can start managing your menu</li>
-                    </ul>
-                  </AlertDescription>
-                </Alert>
-
-                <div className="flex space-x-2 pt-4">
-                  <Button
-                    variant="outline"
-                    onClick={() => setStep(2)}
-                    className="flex-1"
-                  >
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back
-                  </Button>
-                  <Button
-                    onClick={handleSubmit}
-                    className="flex-1 bg-green-600 hover:bg-green-700"
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? 'Submitting...' : 'Submit for Verification'}
-                    <CheckCircle className="ml-2 h-4 w-4" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
         )}
       </div>
     </div>

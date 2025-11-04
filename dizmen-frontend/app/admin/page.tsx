@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { Button } from '@/components/ui/button';
-import { QrCode, LogOut, Shield } from 'lucide-react';
-import AdminVerificationPanel from '@/components/admin-verification-panel';
+import { LogOut, Shield } from 'lucide-react';
+import AdminVerificationPanel from '@/components/dashboard/admin-verification-panel';
 import { mockRestaurants } from '@/lib/mock-data';
 import { Restaurant } from '@/lib/types';
 import { toast } from 'sonner';
@@ -26,15 +26,13 @@ export default function AdminPage() {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
-  const handleVerify = (restaurantId: string, status: 'verified' | 'rejected', reason?: string) => {
+  const handleBlock = (restaurantId: string, status: 'verified' | 'blocked', reason?: string) => {
     setRestaurants(prev => prev.map(r => 
       r.id === restaurantId 
         ? { 
             ...r, 
             verificationStatus: status,
-            verifiedAt: status === 'verified' ? new Date() : undefined,
-            verifiedBy: status === 'verified' ? user.id : undefined,
-            rejectionReason: status === 'rejected' ? reason : undefined,
+            rejectionReason: status === 'blocked' ? reason : undefined,
           }
         : r
     ));
@@ -70,7 +68,7 @@ export default function AdminPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <AdminVerificationPanel 
           restaurants={restaurants}
-          onVerify={handleVerify}
+          onBlock={handleBlock}
         />
       </div>
     </div>

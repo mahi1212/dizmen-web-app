@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, ChevronDown } from 'lucide-react';
-import { mockMenus, mockMenuItems, mockReviews } from '@/lib/mock-data';
-import { Menu, TimeRange, MenuItem, Review } from '@/lib/types';
+import { mockMenus, mockMenuItems } from '@/lib/mock-data';
+import { Menu, TimeRange, MenuItem } from '@/lib/types';
 import { toast } from 'sonner';
 import AddMenuDialog from '@/components/dashboard/modals/add-menu-dialog';
 import QuickAddItemDialog from '@/components/dashboard/modals/quick-add-item-dialog';
@@ -23,7 +23,6 @@ export default function MenusManager() {
   const router = useRouter();
   const [menus, setMenus] = useState<Menu[]>(mockMenus);
   const [menuItems, setMenuItems] = useState<MenuItem[]>(mockMenuItems);
-  const [reviews] = useState<Review[]>(mockReviews);
   const [expandedMenuId, setExpandedMenuId] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isQuickAddDialogOpen, setIsQuickAddDialogOpen] = useState(false);
@@ -376,9 +375,6 @@ export default function MenusManager() {
     }
   };
 
-  const getItemReviews = (itemId: string) => {
-    return reviews.filter(r => r.menuItemId === itemId);
-  };
 
   const addTimeRange = () => {
     setFormData({
@@ -587,8 +583,6 @@ export default function MenusManager() {
             currentImageIndex={currentImageIndex}
             onNextImage={nextImage}
             onPrevImage={prevImage}
-            reviews={getItemReviews(previewItem.id)}
-            onWriteReview={() => {}}
           />
         </Suspense>
       )}
@@ -616,7 +610,6 @@ export default function MenusManager() {
         onMoveInstead={handleMoveFromDeleteDialog}
         item={deletingItem}
         menu={menus.find(m => m.id === deletingItem?.menuId)}
-        reviewCount={deletingItem ? reviews.filter(r => r.menuItemId === deletingItem.id).length : 0}
       />
     </div>
   );

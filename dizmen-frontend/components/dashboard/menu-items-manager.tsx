@@ -5,8 +5,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Clock, Check, ChevronsUpDown, Filter } from 'lucide-react';
-import { mockMenuItems, mockMenus, mockReviews } from '@/lib/mock-data';
-import { MenuItem, Review } from '@/lib/types';
+import { mockMenuItems, mockMenus } from '@/lib/mock-data';
+import { MenuItem } from '@/lib/types';
 import { isMenuAvailableNow } from '@/lib/helpers';
 import { toast } from 'sonner';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -34,7 +34,6 @@ export default function MenuItemsManager({
 }: MenuItemsManagerProps = {}) {
   const [menuItems, setMenuItems] = useState<MenuItem[]>(mockMenuItems);
   const [menus] = useState(mockMenus);
-  const [reviews] = useState<Review[]>(mockReviews);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -227,9 +226,6 @@ export default function MenuItemsManager({
     }
   };
 
-  const getItemReviews = (itemId: string) => {
-    return reviews.filter(r => r.menuItemId === itemId);
-  };
 
   const handleMoveItem = () => {
     if (!movingItem || !targetMenuId) return;
@@ -457,7 +453,6 @@ export default function MenuItemsManager({
         onMoveInstead={handleMoveFromDeleteDialog}
         item={deletingItem}
         menu={menus.find(m => m.id === deletingItem?.menuId)}
-        reviewCount={deletingItem ? reviews.filter(r => r.menuItemId === deletingItem.id).length : 0}
       />
 
       {/* Customer Preview Dialog */}
@@ -473,8 +468,6 @@ export default function MenuItemsManager({
             currentImageIndex={currentImageIndex}
             onNextImage={nextImage}
             onPrevImage={prevImage}
-            reviews={getItemReviews(previewItem.id)}
-            onWriteReview={() => {}}
           />
         </Suspense>
       )}
