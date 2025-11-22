@@ -2,9 +2,13 @@ import {
   IsEmail,
   IsIn,
   IsNotEmpty,
+  IsNumber,
   IsString,
   IsStrongPassword,
-} from 'class-validator';
+  IsBoolean,
+  IsOptional,
+  } from 'class-validator';
+import { Role } from 'generated/prisma/client';
 
 export class RegisterDto {
   @IsNotEmpty()
@@ -20,6 +24,16 @@ export class RegisterDto {
   password: string;
 
   @IsNotEmpty()
-  @IsIn(['user', 'admin'])
-  role: string;
+  @IsIn(['USER', 'SUPER_ADMIN', 'RESTAURANT_OWNER'])
+  role: Role;
+
+  @IsNotEmpty()
+  @IsBoolean()
+  @IsOptional()
+  is_completed_profile: boolean;
+
+  @IsNotEmpty()
+  @IsNumber()
+  @IsOptional()
+  completed_profile_step: number;
 }

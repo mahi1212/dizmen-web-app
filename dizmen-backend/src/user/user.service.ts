@@ -1,11 +1,24 @@
-import { Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from 'src/prisma.service';
+import { Role } from 'generated/prisma/client';
+import { RegisterDto } from 'src/auth/dto/register.dto';
 
 @Injectable()
 export class UserService {
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+  constructor(private readonly prismaService: PrismaService) {}
+
+  async createUser(createUserDto: RegisterDto) {
+
+    return await this.prismaService.user.create({
+      data: {
+        name: createUserDto.name,
+        email: createUserDto.email,
+        password: createUserDto.password,
+        role: createUserDto.role as Role,
+        is_completed_profile: createUserDto.is_completed_profile,
+        completed_profile_step: createUserDto.completed_profile_step
+      }
+    });
   }
 
   findAll() {
@@ -16,17 +29,26 @@ export class UserService {
     return `This action returns a #${id} user`;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
+  // update(id: number, updateUserDto: UpdateUserDto) {
+    // return `This action updates a #${id} user`;
+  // }
 
   remove(id: number) {
     return `This action removes a #${id} user`;
   }
 
-  async getUserByEmail(email: string){
-    return {
-      email
+  async getUserByEmail(email: string) {
+    try {
+      const user = await this.prismaService.user.findFirst({
+        where: {
+          email: email
+        }
+      })
+
+      return user || null
+
+    } catch (error) {
+      throw error;
     }
   }
 }
