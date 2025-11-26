@@ -1,0 +1,65 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  RESTAURANT_OWNER
+  SUPER_ADMIN
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  email    String @unique
+  name     String
+  password String
+  role     Role   @default(RESTAURANT_OWNER)
+
+  is_completed_profile   Boolean? @default(false)
+  completed_profile_step Int?     @default(1)
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  restaurants Restaurant[]
+}
+
+model SocialMediaLink {
+  id          Int       @id @default(autoincrement())
+  url         String
+  platform    String
+  restaurantId Int
+  restaurant  Restaurant @relation("RestaurantSocialMediaLink", fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Restaurant {
+  id                Int      @id @default(autoincrement())
+  restaurant_name   String
+  address           String?
+  phone_number      String?
+  logo              String?
+  website           String?
+  map_link          String?
+  social_media_link SocialMediaLink[] @relation("RestaurantSocialMediaLink")
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
