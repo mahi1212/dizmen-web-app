@@ -35,16 +35,26 @@ model User {
   restaurants Restaurant[]
 }
 
+model SocialMediaLink {
+  id          Int       @id @default(autoincrement())
+  url         String
+  platform    String
+  restaurantId Int
+  restaurant  Restaurant @relation("RestaurantSocialMediaLink", fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Restaurant {
   id                Int      @id @default(autoincrement())
   restaurant_name   String
   address           String?
   phone_number      String?
-  category          String?
-  logo              String[] @default([])
-  website           String[] @default([])
-  map_link          String[] @default([])
-  social_media_link String[] @default([])
+  logo              String?
+  website           String?
+  map_link          String?
+  social_media_link SocialMediaLink[] @relation("RestaurantSocialMediaLink")
 
   userId Int
   user   User @relation(fields: [userId], references: [id])
@@ -52,3 +62,4 @@ model Restaurant {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
