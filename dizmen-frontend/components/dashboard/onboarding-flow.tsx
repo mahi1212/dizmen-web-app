@@ -21,7 +21,6 @@ export default function OnboardingFlow({ restaurant, onComplete }: OnboardingFlo
   const [currentStep, setCurrentStep] = useState(restaurant.onboardingStep);
   const [restaurantData, setRestaurantData] = useState({
     name: restaurant.name || '',
-    description: restaurant.description || '',
     address: restaurant.address || '',
     phone: restaurant.phone || '',
   });
@@ -149,17 +148,6 @@ export default function OnboardingFlow({ restaurant, onComplete }: OnboardingFlo
                   value={restaurantData.name}
                   onChange={(e) => setRestaurantData({ ...restaurantData, name: e.target.value })}
                   placeholder="Enter restaurant name"
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="description">Description *</Label>
-                <Textarea
-                  id="description"
-                  value={restaurantData.description}
-                  onChange={(e) => setRestaurantData({ ...restaurantData, description: e.target.value })}
-                  placeholder="Describe your restaurant"
-                  rows={3}
                   required
                 />
               </div>

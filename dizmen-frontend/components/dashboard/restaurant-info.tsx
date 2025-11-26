@@ -21,7 +21,6 @@ export default function RestaurantInfo() {
   const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
-    description: '',
     address: '',
     phone: '',
     website: '',
@@ -47,7 +46,6 @@ export default function RestaurantInfo() {
         setRestaurant(rest);
         setFormData({
           name: rest.name,
-          description: rest.description || '',
           address: rest.address,
           phone: rest.phone || '',
           website: rest.website || '',
@@ -62,7 +60,6 @@ export default function RestaurantInfo() {
         const tempRestaurant: Restaurant = {
           id: user.restaurantId,
           name: 'Your Restaurant',
-          description: 'Add your restaurant description',
           address: 'Add your address',
           phone: '',
           website: '',
@@ -77,7 +74,6 @@ export default function RestaurantInfo() {
         setRestaurant(tempRestaurant);
         setFormData({
           name: tempRestaurant.name,
-          description: tempRestaurant.description || '',
           address: tempRestaurant.address,
           phone: tempRestaurant.phone || '',
           website: tempRestaurant.website || '',
@@ -155,7 +151,6 @@ export default function RestaurantInfo() {
     if (restaurant) {
       setFormData({
         name: restaurant.name,
-        description: restaurant.description || '',
         address: restaurant.address,
         phone: restaurant.phone || '',
         website: restaurant.website || '',
@@ -262,17 +257,6 @@ export default function RestaurantInfo() {
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder="e.g., La Bella Vista"
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="e.g., Authentic Italian cuisine in the heart of the city"
-                    rows={3}
-                  />
-                  <p className="text-xs text-gray-500">This will be shown to customers on your menu page</p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="address">Address *</Label>

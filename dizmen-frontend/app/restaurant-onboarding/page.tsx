@@ -34,7 +34,6 @@ import { toast } from 'sonner';
 // Validation schema
 const restaurantSchema = z.object({
   name: z.string().min(2, 'Restaurant name must be at least 2 characters'),
-  description: z.string().optional(),
   address: z.string().min(5, 'Address is required'),
   phone: z.string().optional(),
   website: z.string().url('Invalid URL').optional().or(z.literal('')),
@@ -61,7 +60,6 @@ export default function RestaurantOnboardingPage() {
     resolver: zodResolver(restaurantSchema),
     defaultValues: {
       name: '',
-      description: '',
       address: '',
       phone: '',
       website: '',
@@ -188,7 +186,6 @@ export default function RestaurantOnboardingPage() {
       const newRestaurant = {
         id: newRestaurantId,
         name: formData.name,
-        description: formData.description || '',
         address: formData.address,
         phone: formData.phone || '',
         website: formData.website || '',
@@ -315,19 +312,6 @@ export default function RestaurantOnboardingPage() {
                 {form.formState.errors.name && (
                   <p className="text-sm text-red-500 mt-1">{form.formState.errors.name.message}</p>
                 )}
-              </div>
-
-              <div>
-                <Label htmlFor="description">Description </Label>
-                <Textarea
-                  id="description"
-                  {...form.register('description')}
-                  placeholder="e.g., Authentic Italian cuisine in the heart of the city"
-                  rows={4}
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  This will be shown to customers on your menu page
-                </p>
               </div>
 
               <div>
