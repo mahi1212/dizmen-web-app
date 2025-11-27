@@ -5,12 +5,14 @@ import { UserService } from 'src/user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from './dto/login.dto';
 import { ResponseUtil, ApiResponse } from '../common';
+import { ConfigService } from '../config/config.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {}
 
   async register(registerDto: RegisterDto): Promise<ApiResponse> {
@@ -22,7 +24,7 @@ export class AuthService {
     const password = registerDto.password;
     const hash = await bcrypt.hash(
       password,
-      Number(process.env.BCRYPT_SALT_ROUNDS),
+      this.configService.bcrypt.saltRounds,
     );
 
     const newUser = await this.userService.createUser({
